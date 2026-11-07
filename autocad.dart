@@ -136,6 +136,288 @@ class _DrawingsListScreenState extends State<DrawingsListScreen> {
   }
 }
 
+
+// ======================= الرسومات التصميمية =======================
+class DesignPage {
+  final String label; // عنوان الصفحة
+  final String asset; // صورة الصفحة (JPG)
+  const DesignPage(this.label, this.asset);
+}
+
+class DesignItem {
+  final String name;
+  final String? asset; // ملف DXF (اختياري)
+  final List<DesignPage> pages; // صفحات مصوّرة (اختياري)
+  const DesignItem(this.name, {this.asset, this.pages = const []});
+  bool get hasContent => asset != null || pages.isNotEmpty;
+}
+
+class DesignCategory {
+  final String title;
+  final IconData icon;
+  final Color color;
+  final List<DesignItem> items;
+  const DesignCategory(this.title, this.icon, this.color, this.items);
+}
+
+// أضف العناصر تحت كل قسم. كل عنصر ليه صفحات مصوّرة (pages) أو ملف DXF (asset).
+const _wsPlan = 'المخطط وجدول المخارج';
+const _benchPlan = 'المخطط وجدول البنشات';
+const _instr = 'تعليمات التصميم وتنبيهات الأمان';
+const _panel = 'لوحة التوزيع والأحمال';
+
+const designCategories = <DesignCategory>[
+  DesignCategory('الورش', Icons.construction, Color(0xFFEF6C00), [
+    DesignItem('ورشة التركيبات الميكانيكية (M.I.W) - الدور الأرضي', pages: [
+      DesignPage(_wsPlan, 'assets/designs/d_miw_1.jpg'),
+      DesignPage(_instr, 'assets/designs/d_miw_2.jpg'),
+    ]),
+    DesignItem('ورشة تشكيل المعادن واللحام والميكانيكا الأساسية (M.W.W) - الدور الأرضي', pages: [
+      DesignPage(_wsPlan, 'assets/designs/d_mww_1.jpg'),
+      DesignPage(_instr, 'assets/designs/d_mww_2.jpg'),
+      DesignPage(_panel, 'assets/designs/d_mww_3.jpg'),
+    ]),
+    DesignItem('ورشة الهندسة الصناعية (I.E.W) - الدور الأول', pages: [
+      DesignPage(_wsPlan, 'assets/designs/d_iew_1.jpg'),
+      DesignPage(_instr, 'assets/designs/d_iew_2.jpg'),
+      DesignPage(_panel, 'assets/designs/d_iew_3.jpg'),
+    ]),
+    DesignItem('ورشة الطاقة الشمسية (S) - الدور الأول', pages: [
+      DesignPage(_wsPlan, 'assets/designs/d_sol_1.jpg'),
+      DesignPage(_instr, 'assets/designs/d_sol_2.jpg'),
+      DesignPage(_panel, 'assets/designs/d_sol_3.jpg'),
+      DesignPage('منظور 1', 'assets/designs/d_sol_4.jpg'),
+      DesignPage('منظور 2', 'assets/designs/d_sol_5.jpg'),
+    ]),
+  ]),
+  DesignCategory('المعامل', Icons.science, Color(0xFF6A1B9A), [
+    DesignItem('معمل الإلكترونيات (E.L) - الدور الأول', pages: [
+      DesignPage(_benchPlan, 'assets/designs/d_el_1.jpg'),
+      DesignPage(_instr, 'assets/designs/d_el_2.jpg'),
+      DesignPage(_panel, 'assets/designs/d_el_3.jpg'),
+      DesignPage('منظور 1', 'assets/designs/d_el_4.jpg'),
+      DesignPage('منظور 2', 'assets/designs/d_el_5.jpg'),
+    ]),
+    DesignItem('معمل الطاقة الشمسية (PV LAB) - الدور الأول', pages: [
+      DesignPage(_benchPlan, 'assets/designs/d_pv_1.jpg'),
+      DesignPage(_instr, 'assets/designs/d_pv_2.jpg'),
+      DesignPage(_panel, 'assets/designs/d_pv_3.jpg'),
+      DesignPage('منظور', 'assets/designs/d_pv_4.jpg'),
+    ]),
+    DesignItem('معمل التركيبات الكهربائية الذكية (S.E.I.L) - الدور الأول', pages: [
+      DesignPage(_benchPlan, 'assets/designs/d_seil_1.jpg'),
+      DesignPage(_instr, 'assets/designs/d_seil_2.jpg'),
+      DesignPage(_panel, 'assets/designs/d_seil_3.jpg'),
+      DesignPage('منظور', 'assets/designs/d_seil_4.jpg'),
+    ]),
+  ]),
+  DesignCategory('الطرقات', Icons.alt_route, Color(0xFF455A64), []),
+  DesignCategory('الفصول', Icons.class_, Color(0xFF1565C0), []),
+  DesignCategory('الحمامات', Icons.wc, Color(0xFF00838F), []),
+  DesignCategory('الغرف الإدارية', Icons.business_center, Color(0xFF2E7D32), []),
+];
+
+class DesignCategoriesScreen extends StatelessWidget {
+  const DesignCategoriesScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('الرسومات التصميمية'),
+        backgroundColor: const Color(0xFF00838F),
+        foregroundColor: Colors.white,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: GridView.builder(
+          itemCount: designCategories.length,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            mainAxisSpacing: 16,
+            crossAxisSpacing: 16,
+            childAspectRatio: 1.1,
+          ),
+          itemBuilder: (context, i) {
+            final c = designCategories[i];
+            return Material(
+              color: c.color,
+              borderRadius: BorderRadius.circular(18),
+              elevation: 3,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(18),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => DesignItemsScreen(category: c)),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(c.icon, size: 46, color: Colors.white),
+                    const SizedBox(height: 10),
+                    Text(c.title,
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 4),
+                    Text('${c.items.length} عنصر',
+                        style: const TextStyle(color: Colors.white70)),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class DesignItemsScreen extends StatelessWidget {
+  final DesignCategory category;
+  const DesignItemsScreen({super.key, required this.category});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(category.title),
+        backgroundColor: category.color,
+        foregroundColor: Colors.white,
+      ),
+      body: category.items.isEmpty
+          ? const Center(child: Text('لم تتم إضافة عناصر لهذا القسم بعد'))
+          : ListView.builder(
+              padding: const EdgeInsets.all(12),
+              itemCount: category.items.length,
+              itemBuilder: (context, i) {
+                final it = category.items[i];
+                return Card(
+                  child: ListTile(
+                    leading: Icon(category.icon, color: category.color),
+                    title: Text(it.name),
+                    trailing: Icon(
+                        it.hasContent ? Icons.chevron_left : Icons.hourglass_empty),
+                    onTap: () {
+                      if (!it.hasContent) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('لا توجد رسمة لهذا العنصر بعد')),
+                        );
+                        return;
+                      }
+                      if (it.pages.isNotEmpty) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => DesignPagesScreen(
+                                title: it.name,
+                                pages: it.pages,
+                                color: category.color),
+                          ),
+                        );
+                      } else {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => DxfViewerScreen(
+                                info: DrawingInfo(category.title, it.name, it.asset!)),
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                );
+              },
+            ),
+    );
+  }
+}
+
+
+class DesignPagesScreen extends StatefulWidget {
+  final String title;
+  final List<DesignPage> pages;
+  final Color color;
+  const DesignPagesScreen(
+      {super.key, required this.title, required this.pages, required this.color});
+  @override
+  State<DesignPagesScreen> createState() => _DesignPagesScreenState();
+}
+
+class _DesignPagesScreenState extends State<DesignPagesScreen> {
+  final PageController _pc = PageController();
+  int _index = 0;
+  int _turns = 0;
+
+  @override
+  void dispose() {
+    _pc.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.title, maxLines: 2, style: const TextStyle(fontSize: 15)),
+        backgroundColor: widget.color,
+        foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            tooltip: 'تدوير الصفحة',
+            icon: const Icon(Icons.screen_rotation),
+            onPressed: () => setState(() => _turns = (_turns + 1) % 4),
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          SizedBox(
+            height: 52,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              itemCount: widget.pages.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 8),
+              itemBuilder: (_, i) => ChoiceChip(
+                label: Text('${i + 1}. ${widget.pages[i].label}'),
+                selected: i == _index,
+                onSelected: (_) => _pc.animateToPage(i,
+                    duration: const Duration(milliseconds: 250),
+                    curve: Curves.easeOut),
+              ),
+            ),
+          ),
+          Expanded(
+            child: PageView.builder(
+              controller: _pc,
+              itemCount: widget.pages.length,
+              onPageChanged: (i) => setState(() => _index = i),
+              itemBuilder: (_, i) => InteractiveViewer(
+                minScale: 1,
+                maxScale: 6,
+                child: Center(
+                  child: RotatedBox(
+                    quarterTurns: _turns,
+                    child: Image.asset(widget.pages[i].asset,
+                        fit: BoxFit.contain, gaplessPlayback: true),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(6),
+            child: Text('صفحة ${_index + 1} من ${widget.pages.length}  •  كبّر بإصبعين، واسحب للتنقل',
+                style: const TextStyle(fontSize: 12, color: Colors.grey)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 // ======================= نتيجة القراءة =======================
 class TextItem {
   final double x, y, h, rot;
@@ -149,8 +431,12 @@ class LayerGeom {
   final List<int> colors;
   final List<Float64List> coords; // x,y,x,y,... لكل لون
   final List<Int32List> counts; // عدد نقاط كل خط
-  final int total; // عدد الخطوط
-  LayerGeom(this.name, this.colors, this.coords, this.counts, this.total);
+  final List<int> fcolors; // ألوان التعبئة (ARGB)
+  final List<Float64List> fcoords;
+  final List<Int32List> fcounts;
+  final int total; // عدد العناصر
+  LayerGeom(this.name, this.colors, this.coords, this.counts, this.fcolors,
+      this.fcoords, this.fcounts, this.total);
 }
 
 class ParsedDxf {
@@ -190,6 +476,7 @@ class _Parser {
   final Map<String, _Blk> blocks = {};
   final Map<String, List<int>> layers = {}; // name -> [color, off(0/1)]
   final Map<String, Map<int, _Bucket>> buckets = {};
+  final Map<String, Map<int, _Bucket>> fills = {};
   final List<TextItem> texts = [];
 
   String? gs(_Ent e, int code) {
@@ -311,19 +598,29 @@ class _Parser {
     }
 
     final out = <LayerGeom>[];
-    buckets.forEach((name, cm) {
+    final allNames = <String>{...buckets.keys, ...fills.keys};
+    for (final name in allNames) {
       final cols = <int>[];
       final cs = <Float64List>[];
       final ns = <Int32List>[];
+      final fcols = <int>[];
+      final fcs = <Float64List>[];
+      final fns = <Int32List>[];
       int total = 0;
-      cm.forEach((k, v) {
+      (buckets[name] ?? {}).forEach((k, v) {
         cols.add(k);
         cs.add(Float64List.fromList(v.pts));
         ns.add(Int32List.fromList(v.counts));
         total += v.counts.length;
       });
-      out.add(LayerGeom(name, cols, cs, ns, total));
-    });
+      (fills[name] ?? {}).forEach((k, v) {
+        fcols.add(k);
+        fcs.add(Float64List.fromList(v.pts));
+        fns.add(Int32List.fromList(v.counts));
+        total += v.counts.length;
+      });
+      out.add(LayerGeom(name, cols, cs, ns, fcols, fcs, fns, total));
+    }
     return ParsedDxf(out, texts, b);
   }
 
@@ -410,6 +707,15 @@ class _Parser {
     b.pts.addAll(pts);
   }
 
+  void addFill(List<double> pts, int argb, String layer) {
+    if (pts.length < 6) return;
+    final b = fills
+        .putIfAbsent(layer, () => {})
+        .putIfAbsent(argb, () => _Bucket());
+    b.counts.add(pts.length ~/ 2);
+    b.pts.addAll(pts);
+  }
+
   void addPoly(List<List<double>> p, List<double> m, int color, String layer) {
     final out = <double>[];
     for (final q in p) {
@@ -435,7 +741,7 @@ class _Parser {
     for (final e in ents) {
       final t = e.type;
       if (gs(e, 60) == '1') continue;
-      const geo = {'LINE', 'LWPOLYLINE', 'CIRCLE', 'ARC', 'INSERT', 'LEADER', 'DIMENSION'};
+      const geo = {'LINE', 'LWPOLYLINE', 'CIRCLE', 'ARC', 'INSERT', 'LEADER', 'DIMENSION', 'HATCH'};
       int col = 0;
       final lay0 = effLayer(e, ctx);
       if (geo.contains(t)) {
@@ -452,6 +758,27 @@ class _Parser {
           break;
         case 'LWPOLYLINE':
           _lwpoly(e, m, col, lay0);
+          break;
+        case 'HATCH':
+          {
+            final xs = <double>[], ys = <double>[];
+            for (int i = e.s; i < e.e; i++) {
+              if (codes[i] == 10) {
+                xs.add(double.tryParse(vals[i]) ?? 0);
+              } else if (codes[i] == 20) {
+                ys.add(double.tryParse(vals[i]) ?? 0);
+              }
+            }
+            final cnt = math.min(xs.length, ys.length);
+            final pts = <double>[];
+            for (int k = 0; k < cnt; k++) {
+              pts.add(m[0] * xs[k] + m[2] * ys[k] + m[4]);
+              pts.add(m[1] * xs[k] + m[3] * ys[k] + m[5]);
+            }
+            final solid = gs(e, 70) == '1';
+            final argb = ((solid ? 0xFF : 0x59) << 24) | (col & 0xFFFFFF);
+            addFill(pts, argb, lay0);
+          }
           break;
         case 'CIRCLE':
           addPoly(arcPts(gd(e, 10), gd(e, 20), gd(e, 40), 0, 2 * math.pi), m, col, lay0);
@@ -600,6 +927,7 @@ class DxfViewerScreen extends StatefulWidget {
 class _DxfViewerScreenState extends State<DxfViewerScreen> {
   ParsedDxf? data;
   final Map<String, ui.Picture> pics = {};
+  final Map<String, ui.Picture> fillPics = {};
   final Set<String> hidden = {};
   int version = 0;
   List<TextPainter> painters = [];
@@ -624,7 +952,34 @@ class _DxfViewerScreenState extends State<DxfViewerScreen> {
       final bytes = bd.buffer.asUint8List(bd.offsetInBytes, bd.lengthInBytes);
       final parsed = await compute(parseDxf, bytes);
       final pm = <String, ui.Picture>{};
+      final fm = <String, ui.Picture>{};
       for (final lg in parsed.layers) {
+        // التعبئة (Hatch / Solid) في صورة منفصلة تُرسم تحت الخطوط
+        if (lg.fcolors.isNotEmpty) {
+          final frec = ui.PictureRecorder();
+          final fcanvas = Canvas(frec);
+          for (int i = 0; i < lg.fcolors.length; i++) {
+            final path = Path();
+            final c = lg.fcoords[i];
+            final n = lg.fcounts[i];
+            int p = 0;
+            for (final cnt in n) {
+              path.moveTo(c[p], c[p + 1]);
+              for (int k = 1; k < cnt; k++) {
+                path.lineTo(c[p + 2 * k], c[p + 2 * k + 1]);
+              }
+              path.close();
+              p += 2 * cnt;
+            }
+            fcanvas.drawPath(
+                path,
+                Paint()
+                  ..color = Color(lg.fcolors[i])
+                  ..style = PaintingStyle.fill
+                  ..isAntiAlias = true);
+          }
+          fm[lg.name] = frec.endRecording();
+        }
         final rec = ui.PictureRecorder();
         final canvas = Canvas(rec);
         for (int i = 0; i < lg.colors.length; i++) {
@@ -662,6 +1017,9 @@ class _DxfViewerScreenState extends State<DxfViewerScreen> {
         pics
           ..clear()
           ..addAll(pm);
+        fillPics
+          ..clear()
+          ..addAll(fm);
         painters = tps;
       });
     } catch (e) {
@@ -827,7 +1185,10 @@ class _DxfViewerScreenState extends State<DxfViewerScreen> {
                         child: CustomPaint(
                           size: Size.infinite,
                           painter: _DxfPainter(
-                              [for (final e in pics.entries) if (!hidden.contains(e.key)) e.value],
+                              [
+                                for (final e in fillPics.entries) if (!hidden.contains(e.key)) e.value,
+                                for (final e in pics.entries) if (!hidden.contains(e.key)) e.value,
+                              ],
                               data!.texts, painters, hidden, version, scale, offset),
                         ),
                       ),
