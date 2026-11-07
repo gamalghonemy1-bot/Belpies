@@ -9,9 +9,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: |
-          mkdir -p lib assets/drawings
+          mkdir -p lib assets/drawings assets/designs
           mv main.dart autocad.dart lib/
           mv *.dxf assets/drawings/
+          mv d_*.jpg assets/designs/
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
