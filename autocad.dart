@@ -349,6 +349,11 @@ class _DesignPagesScreenState extends State<DesignPagesScreen> {
   final PageController _pc = PageController();
   int _index = 0;
   int _turns = 0;
+  bool _zoomed = false;
+
+  void _setZoom(bool z) {
+    if (z != _zoomed) setState(() => _zoomed = z);
+  }
 
   @override
   void dispose() {
@@ -392,27 +397,91 @@ class _DesignPagesScreenState extends State<DesignPagesScreen> {
           Expanded(
             child: PageView.builder(
               controller: _pc,
+              // أثناء التكبير نوقف سحب الصفحات عشان الرسمة تتحرك بدون تداخل
+              physics: _zoomed
+                  ? const NeverScrollableScrollPhysics()
+                  : const PageScrollPhysics(),
               itemCount: widget.pages.length,
-              onPageChanged: (i) => setState(() => _index = i),
-              itemBuilder: (_, i) => InteractiveViewer(
-                minScale: 1,
-                maxScale: 6,
-                child: Center(
-                  child: RotatedBox(
-                    quarterTurns: _turns,
-                    child: Image.asset(widget.pages[i].asset,
-                        fit: BoxFit.contain, gaplessPlayback: true),
-                  ),
+              onPageChanged: (i) => setState(() {
+                _index = i;
+                _zoomed = false;
+              }),
+              itemBuilder: (_, i) => ClipRect(
+                child: _ZoomPage(
+                  key: ValueKey('${widget.pages[i].asset}-$_turns'),
+                  asset: widget.pages[i].asset,
+                  turns: _turns,
+                  onZoom: _setZoom,
                 ),
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.all(6),
-            child: Text('صفحة ${_index + 1} من ${widget.pages.length}  •  كبّر بإصبعين، واسحب للتنقل',
+            child: Text('صفحة ${_index + 1} من ${widget.pages.length}  •  كبّر بإصبعين أو اضغط مرتين، وصغّر للتنقل بين الصفحات',
                 style: const TextStyle(fontSize: 12, color: Colors.grey)),
           ),
         ],
+      ),
+    );
+  }
+}
+
+
+class _ZoomPage extends StatefulWidget {
+  final String asset;
+  final int turns;
+  final ValueChanged<bool> onZoom;
+  const _ZoomPage(
+      {super.key, required this.asset, required this.turns, required this.onZoom});
+  @override
+  State<_ZoomPage> createState() => _ZoomPageState();
+}
+
+class _ZoomPageState extends State<_ZoomPage> {
+  final TransformationController _tc = TransformationController();
+  Offset _tap = Offset.zero;
+
+  bool get _isZoomed => _tc.value.getMaxScaleOnAxis() > 1.02;
+
+  @override
+  void initState() {
+    super.initState();
+    _tc.addListener(() => widget.onZoom(_isZoomed));
+  }
+
+  @override
+  void dispose() {
+    _tc.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onDoubleTapDown: (d) => _tap = d.localPosition,
+      onDoubleTap: () {
+        if (_isZoomed) {
+          _tc.value = Matrix4.identity();
+        } else {
+          const s = 2.5;
+          _tc.value = Matrix4.identity()
+            ..translate(-_tap.dx * (s - 1), -_tap.dy * (s - 1))
+            ..scale(s);
+        }
+      },
+      child: InteractiveViewer(
+        transformationController: _tc,
+        minScale: 1,
+        maxScale: 6,
+        clipBehavior: Clip.hardEdge,
+        child: Center(
+          child: RotatedBox(
+            quarterTurns: widget.turns,
+            child: Image.asset(widget.asset,
+                fit: BoxFit.contain, gaplessPlayback: true),
+          ),
+        ),
       ),
     );
   }
