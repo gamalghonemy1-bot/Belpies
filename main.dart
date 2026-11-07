@@ -17,7 +17,7 @@ class BelbeisApp extends StatelessWidget {
       ),
       builder: (context, child) =>
           Directionality(textDirection: TextDirection.rtl, child: child!),
-      home: const HomeScreen(),
+      home: const WelcomeScreen(),
     );
   }
 }
@@ -35,6 +35,7 @@ class HomeScreen extends StatelessWidget {
   static const items = [
     MenuItem('المقايسة', Icons.calculate, Color(0xFF1565C0)),
     MenuItem('رسومات المشروع', Icons.architecture, Color(0xFF2E7D32)),
+    MenuItem('الرسومات التصميمية', Icons.design_services, Color(0xFF00838F)),
     MenuItem('الاستحداث', Icons.add_business, Color(0xFFEF6C00)),
     MenuItem('الحصر', Icons.fact_check, Color(0xFF6A1B9A)),
   ];
@@ -74,7 +75,9 @@ class HomeScreen extends StatelessWidget {
                         ? const MeqayasaScreen()
                         : item.title == 'رسومات المشروع'
                             ? const DrawingsListScreen()
-                            : SectionScreen(item: item),
+                            : item.title == 'الرسومات التصميمية'
+                                ? const DesignCategoriesScreen()
+                                : SectionScreen(item: item),
                   ),
                 ),
                 child: Column(
@@ -417,6 +420,224 @@ class _MeqayasaScreenState extends State<MeqayasaScreen> {
               ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// ======================= الشاشة الترحيبية وتسجيل الدخول =======================
+const String _kPassword = 'gsrmmo';
+
+class WelcomeScreen extends StatefulWidget {
+  const WelcomeScreen({super.key});
+  @override
+  State<WelcomeScreen> createState() => _WelcomeScreenState();
+}
+
+class _WelcomeScreenState extends State<WelcomeScreen>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(
+      vsync: this, duration: const Duration(milliseconds: 1500))
+    ..forward();
+  late final Animation<double> _fade =
+      CurvedAnimation(parent: _c, curve: Curves.easeOut);
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  Future<void> _openLogin() async {
+    final ok = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (_) => const _LoginSheet(),
+    );
+    if (ok == true && mounted) {
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (_) => const HomeScreen()));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        width: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFF071A2F), Color(0xFF0D47A1), Color(0xFF1976D2)],
+          ),
+        ),
+        child: SafeArea(
+          child: FadeTransition(
+            opacity: _fade,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 28),
+              child: Column(
+                children: [
+                  const Spacer(flex: 3),
+                  Container(
+                    padding: const EdgeInsets.all(28),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withOpacity(0.12),
+                      border: Border.all(
+                          color: const Color(0xFFFFD54F), width: 2),
+                    ),
+                    child: const Icon(Icons.architecture,
+                        size: 72, color: Colors.white),
+                  ),
+                  const SizedBox(height: 28),
+                  const Text(
+                    'مركز تميز بلبيس',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 36,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                      height: 1.3,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    'المقايسات والرسومات الهندسية',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.white.withOpacity(0.85),
+                    ),
+                  ),
+                  const Spacer(flex: 3),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 54,
+                    child: ElevatedButton.icon(
+                      onPressed: _openLogin,
+                      icon: const Icon(Icons.login),
+                      label: const Text('تسجيل الدخول',
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFFC107),
+                        foregroundColor: const Color(0xFF0A2540),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  Container(
+                      width: 70, height: 2, color: const Color(0xFFFFD54F)),
+                  const SizedBox(height: 12),
+                  Text('إعداد',
+                      style: TextStyle(
+                          fontSize: 15,
+                          letterSpacing: 2,
+                          color: Colors.white.withOpacity(0.8))),
+                  const SizedBox(height: 4),
+                  ShaderMask(
+                    shaderCallback: (r) => const LinearGradient(colors: [
+                      Color(0xFFFFE082),
+                      Color(0xFFFFB300),
+                      Color(0xFFFFE082),
+                    ]).createShader(r),
+                    child: const Text(
+                      'م / جمال غنيمي',
+                      style: TextStyle(
+                        fontSize: 30,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                        letterSpacing: 1,
+                        shadows: [
+                          Shadow(
+                              color: Colors.black54,
+                              blurRadius: 8,
+                              offset: Offset(0, 3))
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _LoginSheet extends StatefulWidget {
+  const _LoginSheet();
+  @override
+  State<_LoginSheet> createState() => _LoginSheetState();
+}
+
+class _LoginSheetState extends State<_LoginSheet> {
+  final _ctrl = TextEditingController();
+  bool _hide = true;
+  String? _error;
+
+  void _submit() {
+    if (_ctrl.text.trim() == _kPassword) {
+      Navigator.pop(context, true);
+    } else {
+      setState(() => _error = 'كلمة السر غير صحيحة');
+    }
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+          24, 24, 24, MediaQuery.of(context).viewInsets.bottom + 24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text('تسجيل الدخول',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 20),
+          TextField(
+            controller: _ctrl,
+            obscureText: _hide,
+            autofocus: true,
+            textDirection: TextDirection.ltr,
+            onSubmitted: (_) => _submit(),
+            decoration: InputDecoration(
+              labelText: 'كلمة السر',
+              errorText: _error,
+              prefixIcon: const Icon(Icons.lock_outline),
+              border: const OutlineInputBorder(),
+              suffixIcon: IconButton(
+                icon: Icon(_hide ? Icons.visibility : Icons.visibility_off),
+                onPressed: () => setState(() => _hide = !_hide),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            height: 50,
+            child: FilledButton(
+              onPressed: _submit,
+              child: const Text('دخول', style: TextStyle(fontSize: 18)),
+            ),
+          ),
+        ],
       ),
     );
   }
